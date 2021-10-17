@@ -1,8 +1,9 @@
 from rest_framework import viewsets
+from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 
 from api.serializers import CommentSerializer, GroupSerializer, PostSerializer
-from posts.models import Comment, Group, Post
+from posts.models import Group, Post
 
 from .permissions import AuthorEditOrReadOnly
 from .serializers import PostSerializer
@@ -33,11 +34,16 @@ class CommentViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         post_id = self.kwargs.get("post_id")
-        new_queryset = Comment.objects.filter(post=post_id)
-        return new_queryset
+        post = get_object_or_404(Post, id=post_id)
+        comments = post.comments.all()
+        return comments
 
     def perform_create(self, serializer):
+        post_id = self.kwargs.get("post_id")
+        get_object_or_404(Post, id=post_id)
         serializer.save(author=self.request.user)
 
     def perform_update(self, serializer):
+        post_id = self.kwargs.get("post_id")
+        get_object_or_404(Post, id=post_id)
         serializer.save(author=self.request.user)
